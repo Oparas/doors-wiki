@@ -1,143 +1,86 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
-<meta charset="UTF-8">
-<title>Doors Wiki Online</title>
+  <meta charset="UTF-8">
+  <title>Doors Wiki Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<script type="module">
-/* -------------------- Firebase SDK Imports -------------------- */
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
-  from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, onSnapshot }
-  from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+  <!-- Firebase CDN (v9 Modular) -->
+  <script type="module">
+    // Firebase SDK
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.11/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.6.11/firebase-analytics.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } 
+      from "https://www.gstatic.com/firebasejs/9.6.11/firebase-auth.js";
 
-/* -------------------- Firebase Config -------------------- */
-const firebaseConfig = {
-  apiKey: "AIzaSyDiVVLyuswljX045vy3OlOzzelA2SIBDYA",
-  authDomain: "howtoplaydoors.firebaseapp.com",
-  projectId: "howtoplaydoors",
-  storageBucket: "howtoplaydoors.firebasestorage.app",
-  messagingSenderId: "909503530350",
-  appId: "1:909503530350:web:b924362e30160a4ada2d7f",
-  measurementId: "G-28MXWZRS18"
-};
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDiVVLyuswljX045vy3OlOzzelA2SIBDYA",
+      authDomain: "howtoplaydoors.firebaseapp.com",
+      projectId: "howtoplaydoors",
+      storageBucket: "howtoplaydoors.firebasestorage.app",
+      messagingSenderId: "909503530350",
+      appId: "1:909503530350:web:d04277854658b5bdda2d7f",
+      measurementId: "G-2TT2FFN2DD"
+    };
 
-/* -------------------- Initialize Firebase -------------------- */
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-/* -------------------- Zones -------------------- */
-const zones = ["Backdoors", "Hotel", "The Rooms", "The Outdoors", "The Mines"];
-const zoneCache = {};
-
-/* -------------------- DOM Loaded -------------------- */
-window.onload = () => {
-  const loginBtn = document.getElementById("loginBtn");
-  const logoutBtn = document.getElementById("logoutBtn");
-  const loginPanel = document.getElementById("loginPanel");
-  const adminPanel = document.getElementById("adminPanel");
-  const userName = document.getElementById("userName");
-
-  const zoneSelect = document.getElementById("zoneSelect");
-  const zoneEditor = document.getElementById("zoneEditor");
-  const saveBtn = document.getElementById("saveBtn");
-  const displayContent = document.getElementById("displayContent");
-
-  /* ---- Populate Zone Select ---- */
-  zones.forEach(z => {
-    const op = document.createElement("option");
-    op.value = z;
-    op.innerText = z;
-    zoneSelect.appendChild(op);
-  });
-
-  /* ---- Login ---- */
-  loginBtn.onclick = () => {
+    // Init
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
-    signInWithPopup(auth, provider).catch(err => {
-      alert("Login failed: " + err.message);
-      console.error(err);
-    });
-  };
 
-  /* ---- Logout ---- */
-  logoutBtn.onclick = () => signOut(auth);
-
-  /* ---- Auth State ---- */
-  onAuthStateChanged(auth, user => {
-    if (user) {
-      loginPanel.style.display = "none";
-      adminPanel.style.display = "block";
-      userName.textContent = user.displayName;
-    } else {
-      loginPanel.style.display = "block";
-      adminPanel.style.display = "none";
+    // Login function
+    window.login = function() {
+      signInWithPopup(auth, provider)
+        .then(result => {})
+        .catch(error => alert("Login error: " + error.message));
     }
-  });
 
-  /* ---- Load Realtime Data ---- */
-  zones.forEach(zone => {
-    const ref = doc(db, "zones", zone);
-    onSnapshot(ref, snap => {
-      zoneCache[zone] = snap.exists() ? snap.data().content : "";
-      if (zoneSelect.value === zone) {
-        zoneEditor.value = zoneCache[zone] || "";
-        displayContent.innerHTML = zoneCache[zone] || "";
+    // Logout function
+    window.logout = function() {
+      signOut(auth);
+    }
+
+    // Check Login State
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        document.getElementById("login-section").style.display = "none";
+        document.getElementById("user-section").style.display = "block";
+
+        document.getElementById("user-name").textContent = user.displayName;
+        document.getElementById("user-pic").src = user.photoURL;
+      } else {
+        document.getElementById("login-section").style.display = "block";
+        document.getElementById("user-section").style.display = "none";
       }
     });
-  });
+  </script>
 
-  /* ---- Change Zone ---- */
-  zoneSelect.onchange = () => {
-    const zone = zoneSelect.value;
-    zoneEditor.value = zoneCache[zone] || "";
-    displayContent.innerHTML = zoneCache[zone] || "";
-  };
-
-  /* ---- Save ---- */
-  saveBtn.onclick = async () => {
-    const zone = zoneSelect.value;
-    const text = zoneEditor.value;
-
-    await setDoc(doc(db, "zones", zone), { content: text });
-    alert("บันทึกข้อมูลแล้ว ✔");
-  };
-};
-</script>
-
-<style>
-body { font-family: Arial; padding: 20px; background: #e9e9e9; }
-.container { max-width: 900px; margin:auto; background:#fff; padding:20px; border-radius:10px; }
-textarea { width:100%; height:120px; }
-button { padding:8px 14px; margin:5px; }
-#displayContent img { max-width: 100%; }
-</style>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    #user-pic { width: 60px; border-radius: 50%; }
+  </style>
 </head>
-
 <body>
-<div class="container">
-  <h1>Doors Wiki Online</h1>
 
-  <!-- Login Panel -->
-  <div id="loginPanel">
-    <button id="loginBtn">Login with Google</button>
+  <!-- Login Screen -->
+  <div id="login-section">
+    <h2>Login เพื่อแก้ไขข้อมูล</h2>
+    <button onclick="login()">Login with Google</button>
   </div>
 
-  <!-- Admin Panel -->
-  <div id="adminPanel" style="display:none;">
-    <p>ล็อกอินเป็น: <b id="userName"></b> <button id="logoutBtn">ออกจากระบบ</button></p>
+  <!-- User Info -->
+  <div id="user-section" style="display:none;">
+    <img id="user-pic">
+    <p>สวัสดี, <span id="user-name"></span></p>
+    <button onclick="logout()">Logout</button>
 
-    <select id="zoneSelect"></select>
-    <textarea id="zoneEditor" placeholder="ใส่ HTML / ข้อความเกี่ยวกับ Floor นี้"></textarea>
-    <button id="saveBtn">บันทึก</button>
+    <hr>
+
+    <h2>แผงหลังบ้าน</h2>
+    <p>คุณสามารถแก้ไขข้อมูลแต่ละ Floors ได้ที่นี่</p>
   </div>
 
-  <hr>
-
-  <h2>ข้อมูล Floors</h2>
-  <div id="displayContent"></div>
-</div>
 </body>
 </html>
