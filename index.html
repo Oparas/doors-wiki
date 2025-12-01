@@ -2,67 +2,89 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Doors Wiki Viewer</title>
+<title>วิธีเล่น Doors (Floors Guide)</title>
 <style>
-  body { font-family: Arial, sans-serif; padding: 20px; }
-  img { max-width: 100%; height: auto; }
-  audio { display: block; margin: 10px 0; }
+  body { font-family: Arial, sans-serif; background: #f2f2f2; padding: 20px; }
+  h1 { text-align: center; }
+  .container { max-width: 900px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+  select { font-size: 16px; padding: 5px; margin-bottom: 20px; }
+  #content img { max-width: 100%; height: auto; display: block; margin: 10px 0; }
+  #content audio { display: block; margin: 10px 0; }
   .credit { font-size: 0.9em; color: #555; margin-top: 20px; }
 </style>
 </head>
 <body>
 
-<h2>ข้อมูลจาก Doors Wiki</h2>
-<div id="content">กำลังโหลดข้อมูล...</div>
-<div class="credit">
-  แหล่งข้อมูล: <a href="https://doors.fandom.com/wiki/Figure" target="_blank">Doors Wiki</a> (Fandom)
+<h1>วิธีเล่น Doors (Floors Guide)</h1>
+
+<div class="container">
+  <label for="floorSelect">เลือก Floor:</label>
+  <select id="floorSelect">
+    <option value="1">Floor 1</option>
+    <option value="2">Floor 2</option>
+    <option value="3">Floor 3</option>
+    <!-- เพิ่ม Floor ตามต้องการ -->
+  </select>
+
+  <div id="content">กรุณาเลือก Floor เพื่อดูวิธีเล่น...</div>
+
+  <div class="credit">
+    แหล่งข้อมูล: <a href="https://doors.fandom.com/wiki/Figure" target="_blank">Doors Wiki</a> (Fandom)
+  </div>
 </div>
 
 <script>
-const pageTitle = "Figure"; // เปลี่ยนชื่อบทความได้
-
-// ดึง HTML ของบทความ
-fetch(`https://doors.fandom.com/api.php?action=parse&page=${encodeURIComponent(pageTitle)}&format=json&origin=*`)
-.then(r => r.json())
-.then(data => {
+// ฟังก์ชันดึงข้อมูล Floor
+function loadFloor(floor) {
+    const pageTitle = `Floor ${floor}`; // ชื่อบทความใน Doors Wiki
     const contentDiv = document.getElementById("content");
+    contentDiv.innerHTML = "กำลังโหลดข้อมูล...";
 
-    if (!data.parse || !data.parse.text) {
-        contentDiv.innerText = "ไม่พบเนื้อหาหรือ parse failed";
-        return;
-    }
-
-    // ใส่ HTML ของบทความ
-    contentDiv.innerHTML = data.parse.text["*"];
-
-    // แก้ <img> ให้โหลดภาพจริง (Fandom บางครั้งใช้ data-src)
-    const imgs = contentDiv.querySelectorAll("img");
-    imgs.forEach(img => {
-        if (img.dataset.src) {
-            img.src = img.dataset.src;
+    fetch(`https://doors.fandom.com/api.php?action=parse&page=${encodeURIComponent(pageTitle)}&format=json&origin=*`)
+    .then(r => r.json())
+    .then(data => {
+        if (!data.parse || !data.parse.text) {
+            contentDiv.innerText = "ไม่พบข้อมูลสำหรับ Floor นี้";
+            return;
         }
+
+        contentDiv.innerHTML = data.parse.text["*"];
+
+        // แก้ <img> ให้โหลดภาพจริง
+        const imgs = contentDiv.querySelectorAll("img");
+        imgs.forEach(img => {
+            if (img.dataset.src) {
+                img.src = img.dataset.src;
+            }
+        });
+
+        // TODO: ถ้ามีไฟล์เสียง ให้เพิ่ม <audio> ตาม URL จริง
+        // ตัวอย่าง:
+        // const audioUrl = "https://static.wikia.nocookie.net/doors/images/example.mp3";
+        // if(audioUrl) {
+        //   const audio = document.createElement("audio");
+        //   audio.controls = true;
+        //   const source = document.createElement("source");
+        //   source.src = audioUrl;
+        //   source.type = "audio/mpeg";
+        //   audio.appendChild(source);
+        //   contentDiv.appendChild(audio);
+        // }
+
+    })
+    .catch(err => {
+        contentDiv.innerText = "เกิดข้อผิดพลาด: " + err;
+        console.error(err);
     });
+}
 
-    // ดึงไฟล์เสียงจากบทความ (ถ้ามี)
-    // ตัวอย่างสมมติ: เราสมมติว่าไฟล์เสียงชื่อ "Example.mp3"
-    // ถ้ารู้ชื่อไฟล์จริง ให้เปลี่ยน URL
-    const audioUrl = "https://static.wikia.nocookie.net/doors/images/example.mp3"; 
-    // ตรวจสอบจริงก่อนว่าไฟล์มีอยู่
-    if (audioUrl) {
-        const audio = document.createElement("audio");
-        audio.controls = true;
-        const source = document.createElement("source");
-        source.src = audioUrl;
-        source.type = "audio/mpeg";
-        audio.appendChild(source);
-        contentDiv.appendChild(audio);
-    }
-
-})
-.catch(err => {
-    document.getElementById("content").innerText = "เกิดข้อผิดพลาด: " + err;
-    console.error(err);
+// Event listener เมื่อเปลี่ยน Floor
+document.getElementById("floorSelect").addEventListener("change", (e) => {
+    loadFloor(e.target.value);
 });
+
+// โหลด Floor แรกอัตโนมัติ
+loadFloor(document.getElementById("floorSelect").value);
 </script>
 
 </body>
