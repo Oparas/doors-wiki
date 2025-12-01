@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
-    <title>Doors Wiki Fetch Example</title>
+    <title>Doors Wiki Fetch</title>
 </head>
 <body>
 
@@ -10,21 +10,24 @@
 <div id="content">กำลังโหลดข้อมูล...</div>
 
 <script>
-// ชื่อบทความที่ต้องการดึงจาก Doors Wiki
-const pageTitle = "Figure";
+const pageTitle = "Figure"; // เปลี่ยนชื่อหน้าได้
 
 fetch(`https://doors.fandom.com/api.php?action=query&prop=extracts&format=json&origin=*&titles=${pageTitle}`)
     .then(response => response.json())
     .then(data => {
         const pages = data.query.pages;
-        const page = pages[Object.keys(pages)[0]];  
-        const html = page.extract;
+        const pageId = Object.keys(pages)[0];
+        const page = pages[pageId];
 
-        document.getElementById("content").innerHTML = html;
+        if (!page.extract) {
+            document.getElementById("content").innerHTML = "ไม่พบเนื้อหาหรือ API ไม่ส่งข้อมูลกลับ";
+            return;
+        }
+
+        document.getElementById("content").innerHTML = page.extract;
     })
     .catch(err => {
-        document.getElementById("content").innerText = "โหลดข้อมูลไม่สำเร็จ";
-        console.error(err);
+        document.getElementById("content").innerText = "เกิดข้อผิดพลาด: " + err;
     });
 </script>
 
