@@ -2,56 +2,135 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Doors Guide</title>
+<title>Doors Guide Online</title>
+<script type="module">
+  // ==================== Firebase SDK ====================
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+  import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+  // ==================== Firebase Config ====================
+  const firebaseConfig = {
+    apiKey: "AIzaSyDiVVLyuswljX045vy3OlOzzelA2SIBDYA",
+    authDomain: "howtoplaydoors.firebaseapp.com",
+    projectId: "howtoplaydoors",
+    storageBucket: "howtoplaydoors.firebasestorage.app",
+    messagingSenderId: "909503530350",
+    appId: "1:909503530350:web:b924362e30160a4ada2d7f",
+    measurementId: "G-28MXWZRS18"
+  };
+
+  // ==================== Initialize Firebase ====================
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // ==================== Zones List ====================
+  const zones = ["Backrooms","Hotel","The Rooms","The Outdoors","The Mines"];
+  const data = {};
+
+  // ==================== DOM Elements ====================
+  let loginDiv, adminDiv, loginBtn, logoutBtn, userNameSpan, zoneSelect, zoneContent, contentDiv, saveBtn;
+  window.addEventListener("DOMContentLoaded", ()=>{
+    loginDiv = document.getElementById("loginDiv");
+    adminDiv = document.getElementById("adminDiv");
+    loginBtn = document.getElementById("loginBtn");
+    logoutBtn = document.getElementById("logoutBtn");
+    userNameSpan = document.getElementById("userName");
+    zoneSelect = document.getElementById("zoneSelect");
+    zoneContent = document.getElementById("zoneContent");
+    contentDiv = document.getElementById("content");
+    saveBtn = document.getElementById("saveBtn");
+
+    // สร้าง select options
+    zones.forEach(z=>{
+      const option = document.createElement("option");
+      option.value = z; option.text = z;
+      zoneSelect.appendChild(option);
+    });
+
+    // ==================== Login/Logout ====================
+    loginBtn.onclick = () => {
+      const provider = new GoogleAuthProvider();
+      signInWithPopup(auth, provider).catch(console.error);
+    };
+    logoutBtn.onclick = () => signOut(auth).catch(console.error);
+
+    onAuthStateChanged(auth, (user)=>{
+      if(user){
+        loginDiv.style.display = "none";
+        adminDiv.style.display = "block";
+        userNameSpan.textContent = user.displayName;
+      } else {
+        loginDiv.style.display = "block";
+        adminDiv.style.display = "none";
+      }
+    });
+
+    // ==================== Save Data ====================
+    saveBtn.onclick = async () => {
+      const zone = zoneSelect.value;
+      const text = zoneContent.value;
+      if(!zone || !text) return alert("กรอกข้อความก่อน");
+      await setDoc(doc(db,"zones",zone),{content:text});
+      alert("บันทึกเรียบร้อย!");
+    };
+
+    // ==================== Realtime Listener ====================
+    zones.forEach(zone=>{
+      const docRef = doc(db,"zones",zone);
+      onSnapshot(docRef,(docSnap)=>{
+        data[zone] = docSnap.exists()? docSnap.data().content : "";
+        if(zoneSelect.value===zone) contentDiv.innerHTML = data[zone] || "ยังไม่มีข้อมูลสำหรับ " + zone;
+        if(zoneSelect.value===zone) zoneContent.value = data[zone] || "";
+      });
+    });
+
+    // ==================== Update textarea on zone change ====================
+    zoneSelect.addEventListener("change", ()=>{
+      const zone = zoneSelect.value;
+      zoneContent.value = data[zone] || "";
+      contentDiv.innerHTML = data[zone] || "ยังไม่มีข้อมูลสำหรับ " + zone;
+    });
+  });
+</script>
 <style>
-  body { font-family: Arial, sans-serif; background: #f2f2f2; padding: 20px; }
-  .container { max-width: 900px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; }
-  select { font-size: 16px; padding: 5px; margin-bottom: 20px; }
-  #content img { max-width: 100%; display: block; margin: 10px 0; }
-  #content audio { display: block; margin: 10px 0; }
+body { font-family: Arial; padding: 20px; background: #f2f2f2; }
+.container { max-width: 900px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; }
+button { padding: 8px 15px; margin: 5px; }
+textarea { width: 100%; height: 100px; }
+select { font-size: 16px; padding: 5px; margin-bottom: 10px; }
+#content img { max-width: 100%; display: block; margin: 10px 0; }
+#content audio { display: block; margin: 10px 0; }
 </style>
 </head>
 <body>
-
-<h1>Doors Guide</h1>
 <div class="container">
-  <label for="floorSelect">เลือก Floor/Zone:</label>
-  <select id="floorSelect"></select>
+<h1>Doors Guide Online</h1>
 
-  <div id="content">กรุณาเลือก Floor/Zone...</div>
+<div id="loginDiv">
+  <button id="loginBtn">Login with Google</button>
 </div>
 
-<script>
-// ดึงข้อมูลจาก localStorage หรือ JSON
-let data = JSON.parse(localStorage.getItem("doorsData")) || {};
+<div id="adminDiv" style="display:none;">
+  <p>Logged in as <span id="userName"></span> <button id="logoutBtn">Logout</button></p>
 
-// สร้าง select
-const select = document.getElementById("floorSelect");
-Object.keys(data).forEach(key => {
-    const option = document.createElement("option");
-    option.value = key;
-    option.text = key;
-    select.appendChild(option);
-});
+  <label>เลือก Floor/Zone:</label>
+  <select id="zoneSelect"></select>
 
-// แสดงเนื้อหา
-function showContent(key){
-    const contentDiv = document.getElementById("content");
-    if(data[key]){
-        contentDiv.innerHTML = data[key];
-    } else {
-        contentDiv.innerHTML = "ยังไม่มีข้อมูลสำหรับ " + key;
-    }
-}
+  <label>ข้อความ/HTML:</label>
+  <textarea id="zoneContent"></textarea>
 
-// event listener
-select.addEventListener("change", e => showContent(e.target.value));
+  <button id="saveBtn">บันทึก</button>
+</div>
 
-// โหลดแรก
-if(select.options.length > 0){
-    showContent(select.options[0].value);
-}
-</script>
+<hr>
 
+<h2>ดูข้อมูล Floors/Zones</h2>
+<div id="content">กรุณาเลือก Floor/Zone...</div>
+
+</div>
 </body>
 </html>
