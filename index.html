@@ -6,7 +6,6 @@
 <script type="module">
   // ==================== Firebase SDK ====================
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics.js";
   import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
   import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
@@ -23,7 +22,6 @@
 
   // ==================== Initialize Firebase ====================
   const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
   const auth = getAuth(app);
   const db = getFirestore(app);
 
@@ -54,8 +52,13 @@
     // ==================== Login/Logout ====================
     loginBtn.onclick = () => {
       const provider = new GoogleAuthProvider();
-      signInWithPopup(auth, provider).catch(console.error);
+      signInWithPopup(auth, provider)
+        .catch(err => {
+          console.error("Login error:", err);
+          alert("Login failed: " + err.message);
+        });
     };
+
     logoutBtn.onclick = () => signOut(auth).catch(console.error);
 
     onAuthStateChanged(auth, (user)=>{
@@ -74,8 +77,13 @@
       const zone = zoneSelect.value;
       const text = zoneContent.value;
       if(!zone || !text) return alert("กรอกข้อความก่อน");
-      await setDoc(doc(db,"zones",zone),{content:text});
-      alert("บันทึกเรียบร้อย!");
+      try {
+        await setDoc(doc(db,"zones",zone),{content:text});
+        alert("บันทึกเรียบร้อย!");
+      } catch(err){
+        console.error("Save error:", err);
+        alert("Save failed: " + err.message);
+      }
     };
 
     // ==================== Realtime Listener ====================
@@ -83,8 +91,10 @@
       const docRef = doc(db,"zones",zone);
       onSnapshot(docRef,(docSnap)=>{
         data[zone] = docSnap.exists()? docSnap.data().content : "";
-        if(zoneSelect.value===zone) contentDiv.innerHTML = data[zone] || "ยังไม่มีข้อมูลสำหรับ " + zone;
-        if(zoneSelect.value===zone) zoneContent.value = data[zone] || "";
+        if(zoneSelect.value===zone){
+          contentDiv.innerHTML = data[zone] || "ยังไม่มีข้อมูลสำหรับ " + zone;
+          zoneContent.value = data[zone] || "";
+        }
       });
     });
 
@@ -99,7 +109,7 @@
 <style>
 body { font-family: Arial; padding: 20px; background: #f2f2f2; }
 .container { max-width: 900px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; }
-button { padding: 8px 15px; margin: 5px; }
+button { padding: 8px 15px; margin: 5px; cursor: pointer; }
 textarea { width: 100%; height: 100px; }
 select { font-size: 16px; padding: 5px; margin-bottom: 10px; }
 #content img { max-width: 100%; display: block; margin: 10px 0; }
@@ -121,7 +131,7 @@ select { font-size: 16px; padding: 5px; margin-bottom: 10px; }
   <select id="zoneSelect"></select>
 
   <label>ข้อความ/HTML:</label>
-  <textarea id="zoneContent"></textarea>
+  <textarea id="zoneContent" placeholder="ใส่ข้อความ รูป <img> หรือ audio <audio>"></textarea>
 
   <button id="saveBtn">บันทึก</button>
 </div>
