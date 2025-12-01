@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>GitHub OAuth Callback</title>
+</head>
+<body>
+<h2>Redirecting...</h2>
+<script>
+  // ตัวอย่าง: OAuth Implicit Grant (GitHub redirect จะส่ง code มา)
+  // ต้องแลก code เป็น token ผ่าน server (เพื่อความปลอดภัย)
+  // ถ้าไม่มี server, ต้องใช้ PKCE flow หรือ GitHub personal token ชั่วคราว
+
+  alert("คุณต้องมี server เล็ก ๆ เพื่อแลก code เป็น access token เพราะ GitHub OAuth ไม่อนุญาต implicit token บน client โดยตรง");
+  window.location.href = "/"; // กลับหน้า index.html
+</script>
+</body>
+</html>
