@@ -2,145 +2,142 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Doors Guide Online</title>
-<script type="module">
-  // ==================== Firebase SDK ====================
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-  import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+<title>Doors Wiki Online</title>
 
-  // ==================== Firebase Config ====================
-  const firebaseConfig = {
-    apiKey: "AIzaSyDiVVLyuswljX045vy3OlOzzelA2SIBDYA",
-    authDomain: "howtoplaydoors.firebaseapp.com",
-    projectId: "howtoplaydoors",
-    storageBucket: "howtoplaydoors.firebasestorage.app",
-    messagingSenderId: "909503530350",
-    appId: "1:909503530350:web:b924362e30160a4ada2d7f",
-    measurementId: "G-28MXWZRS18"
+<script type="module">
+/* -------------------- Firebase SDK Imports -------------------- */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, onSnapshot }
+  from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+/* -------------------- Firebase Config -------------------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyDiVVLyuswljX045vy3OlOzzelA2SIBDYA",
+  authDomain: "howtoplaydoors.firebaseapp.com",
+  projectId: "howtoplaydoors",
+  storageBucket: "howtoplaydoors.firebasestorage.app",
+  messagingSenderId: "909503530350",
+  appId: "1:909503530350:web:b924362e30160a4ada2d7f",
+  measurementId: "G-28MXWZRS18"
+};
+
+/* -------------------- Initialize Firebase -------------------- */
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+/* -------------------- Zones -------------------- */
+const zones = ["Backdoors", "Hotel", "The Rooms", "The Outdoors", "The Mines"];
+const zoneCache = {};
+
+/* -------------------- DOM Loaded -------------------- */
+window.onload = () => {
+  const loginBtn = document.getElementById("loginBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const loginPanel = document.getElementById("loginPanel");
+  const adminPanel = document.getElementById("adminPanel");
+  const userName = document.getElementById("userName");
+
+  const zoneSelect = document.getElementById("zoneSelect");
+  const zoneEditor = document.getElementById("zoneEditor");
+  const saveBtn = document.getElementById("saveBtn");
+  const displayContent = document.getElementById("displayContent");
+
+  /* ---- Populate Zone Select ---- */
+  zones.forEach(z => {
+    const op = document.createElement("option");
+    op.value = z;
+    op.innerText = z;
+    zoneSelect.appendChild(op);
+  });
+
+  /* ---- Login ---- */
+  loginBtn.onclick = () => {
+    const provider = new GoogleAuthProvider();
+    signInWithPopup(auth, provider).catch(err => {
+      alert("Login failed: " + err.message);
+      console.error(err);
+    });
   };
 
-  // ==================== Initialize Firebase ====================
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+  /* ---- Logout ---- */
+  logoutBtn.onclick = () => signOut(auth);
 
-  // ==================== Zones List ====================
-  const zones = ["Backrooms","Hotel","The Rooms","The Outdoors","The Mines"];
-  const data = {};
+  /* ---- Auth State ---- */
+  onAuthStateChanged(auth, user => {
+    if (user) {
+      loginPanel.style.display = "none";
+      adminPanel.style.display = "block";
+      userName.textContent = user.displayName;
+    } else {
+      loginPanel.style.display = "block";
+      adminPanel.style.display = "none";
+    }
+  });
 
-  // ==================== DOM Elements ====================
-  let loginDiv, adminDiv, loginBtn, logoutBtn, userNameSpan, zoneSelect, zoneContent, contentDiv, saveBtn;
-  window.addEventListener("DOMContentLoaded", ()=>{
-    loginDiv = document.getElementById("loginDiv");
-    adminDiv = document.getElementById("adminDiv");
-    loginBtn = document.getElementById("loginBtn");
-    logoutBtn = document.getElementById("logoutBtn");
-    userNameSpan = document.getElementById("userName");
-    zoneSelect = document.getElementById("zoneSelect");
-    zoneContent = document.getElementById("zoneContent");
-    contentDiv = document.getElementById("content");
-    saveBtn = document.getElementById("saveBtn");
-
-    // สร้าง select options
-    zones.forEach(z=>{
-      const option = document.createElement("option");
-      option.value = z; option.text = z;
-      zoneSelect.appendChild(option);
-    });
-
-    // ==================== Login/Logout ====================
-    loginBtn.onclick = () => {
-      const provider = new GoogleAuthProvider();
-      signInWithPopup(auth, provider)
-        .catch(err => {
-          console.error("Login error:", err);
-          alert("Login failed: " + err.message);
-        });
-    };
-
-    logoutBtn.onclick = () => signOut(auth).catch(console.error);
-
-    onAuthStateChanged(auth, (user)=>{
-      if(user){
-        loginDiv.style.display = "none";
-        adminDiv.style.display = "block";
-        userNameSpan.textContent = user.displayName;
-      } else {
-        loginDiv.style.display = "block";
-        adminDiv.style.display = "none";
+  /* ---- Load Realtime Data ---- */
+  zones.forEach(zone => {
+    const ref = doc(db, "zones", zone);
+    onSnapshot(ref, snap => {
+      zoneCache[zone] = snap.exists() ? snap.data().content : "";
+      if (zoneSelect.value === zone) {
+        zoneEditor.value = zoneCache[zone] || "";
+        displayContent.innerHTML = zoneCache[zone] || "";
       }
-    });
-
-    // ==================== Save Data ====================
-    saveBtn.onclick = async () => {
-      const zone = zoneSelect.value;
-      const text = zoneContent.value;
-      if(!zone || !text) return alert("กรอกข้อความก่อน");
-      try {
-        await setDoc(doc(db,"zones",zone),{content:text});
-        alert("บันทึกเรียบร้อย!");
-      } catch(err){
-        console.error("Save error:", err);
-        alert("Save failed: " + err.message);
-      }
-    };
-
-    // ==================== Realtime Listener ====================
-    zones.forEach(zone=>{
-      const docRef = doc(db,"zones",zone);
-      onSnapshot(docRef,(docSnap)=>{
-        data[zone] = docSnap.exists()? docSnap.data().content : "";
-        if(zoneSelect.value===zone){
-          contentDiv.innerHTML = data[zone] || "ยังไม่มีข้อมูลสำหรับ " + zone;
-          zoneContent.value = data[zone] || "";
-        }
-      });
-    });
-
-    // ==================== Update textarea on zone change ====================
-    zoneSelect.addEventListener("change", ()=>{
-      const zone = zoneSelect.value;
-      zoneContent.value = data[zone] || "";
-      contentDiv.innerHTML = data[zone] || "ยังไม่มีข้อมูลสำหรับ " + zone;
     });
   });
+
+  /* ---- Change Zone ---- */
+  zoneSelect.onchange = () => {
+    const zone = zoneSelect.value;
+    zoneEditor.value = zoneCache[zone] || "";
+    displayContent.innerHTML = zoneCache[zone] || "";
+  };
+
+  /* ---- Save ---- */
+  saveBtn.onclick = async () => {
+    const zone = zoneSelect.value;
+    const text = zoneEditor.value;
+
+    await setDoc(doc(db, "zones", zone), { content: text });
+    alert("บันทึกข้อมูลแล้ว ✔");
+  };
+};
 </script>
+
 <style>
-body { font-family: Arial; padding: 20px; background: #f2f2f2; }
-.container { max-width: 900px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; }
-button { padding: 8px 15px; margin: 5px; cursor: pointer; }
-textarea { width: 100%; height: 100px; }
-select { font-size: 16px; padding: 5px; margin-bottom: 10px; }
-#content img { max-width: 100%; display: block; margin: 10px 0; }
-#content audio { display: block; margin: 10px 0; }
+body { font-family: Arial; padding: 20px; background: #e9e9e9; }
+.container { max-width: 900px; margin:auto; background:#fff; padding:20px; border-radius:10px; }
+textarea { width:100%; height:120px; }
+button { padding:8px 14px; margin:5px; }
+#displayContent img { max-width: 100%; }
 </style>
 </head>
+
 <body>
 <div class="container">
-<h1>Doors Guide Online</h1>
+  <h1>Doors Wiki Online</h1>
 
-<div id="loginDiv">
-  <button id="loginBtn">Login with Google</button>
-</div>
+  <!-- Login Panel -->
+  <div id="loginPanel">
+    <button id="loginBtn">Login with Google</button>
+  </div>
 
-<div id="adminDiv" style="display:none;">
-  <p>Logged in as <span id="userName"></span> <button id="logoutBtn">Logout</button></p>
+  <!-- Admin Panel -->
+  <div id="adminPanel" style="display:none;">
+    <p>ล็อกอินเป็น: <b id="userName"></b> <button id="logoutBtn">ออกจากระบบ</button></p>
 
-  <label>เลือก Floor/Zone:</label>
-  <select id="zoneSelect"></select>
+    <select id="zoneSelect"></select>
+    <textarea id="zoneEditor" placeholder="ใส่ HTML / ข้อความเกี่ยวกับ Floor นี้"></textarea>
+    <button id="saveBtn">บันทึก</button>
+  </div>
 
-  <label>ข้อความ/HTML:</label>
-  <textarea id="zoneContent" placeholder="ใส่ข้อความ รูป <img> หรือ audio <audio>"></textarea>
+  <hr>
 
-  <button id="saveBtn">บันทึก</button>
-</div>
-
-<hr>
-
-<h2>ดูข้อมูล Floors/Zones</h2>
-<div id="content">กรุณาเลือก Floor/Zone...</div>
-
+  <h2>ข้อมูล Floors</h2>
+  <div id="displayContent"></div>
 </div>
 </body>
 </html>
