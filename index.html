@@ -6,138 +6,69 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
   body { font-family: sans-serif; padding: 20px; }
-  #user-section, #editor-section { display: none; margin-top: 20px; }
-  textarea { width:100%; height:120px; }
-  button { padding:8px 15px; margin:5px; }
+  #editor-section { margin-top: 20px; }
+  textarea { width:100%; height:200px; }
+  select, button { padding:8px; margin:5px 0; }
 </style>
 </head>
 <body>
-<h1>Doors Wiki Editor</h1>
 
-<div id="login-section">
-  <button id="loginBtn">Login with GitHub</button>
-</div>
-
-<div id="user-section">
-  <p>สวัสดี, <span id="username"></span></p>
-  <button id="logoutBtn">Logout</button>
-</div>
+<h1>Doors Wiki Editor (Mobile)</h1>
 
 <div id="editor-section">
-  <h2>แก้ไข Floors</h2>
   <label>เลือก Zone:</label>
   <select id="zoneSelect"></select>
-  <textarea id="zoneContent" placeholder="ใส่ข้อความ/HTML"></textarea>
-  <button id="saveBtn">บันทึก</button>
+  <textarea id="zoneContent"></textarea>
 </div>
 
-<script type="module">
-const clientId = "Ov23linoWAX16GheN9Wc";
-const redirectUri = "https://oparas.github.io/doors-wiki/callback.html";
-const repoOwner = "oparas"; // ชื่อ GitHub ของคุณ
-const repoName = "doors-wiki"; // repo ที่เก็บไฟล์ JSON
-const branch = "main"; // ชื่อ branch
+<script>
+// --------- Zones และเนื้อหาเริ่มต้น ---------
+const zones = {
+  "Backdoors": "",
+  "Hotel": `วิธีเล่น Doors Roblox The Hotel
+1) ประตูห้องที่ 1 จะล็อคเสมอ กุญแจจะอยู่หลังแผนกต้อนรับ ให้ย่อเข้าไป คอมกด C
+2) เล่นไปเรื่อยๆ ถ้าหาเจอไฟกะพริบก็ให้หาตู้หรือเตียง หรือห้องใต้ดินเพื่อแอบจาก Rush
+3) ถ้าเจอห้องโถงขนาดใหญ่นั่นแสดงว่ามี Seek แล้วคุณต้องวิ่งหนี โรคจิตกีดขวางตามแสงสีฟ้าไป หรือ Guiding light
+4) เมื่อถึงห้องที่ 50 ก็ให้ย่อและห้ามส่งเสียงดัง อ่านหนังสือให้ครบ 8 เล่มแล้วไขรหัสให้ออกไปจากห้องสมุด
+5) เดินผ่านห้องสมุดออกมาแล้วไม่กี่ห้องก็จะมีร้านค้า คุณสามารถซื้อไอเทมกับร้านค้าได้ ไอเทมที่ขายก็จะมีประโยชน์แต่ต้องใช้ตังค์ที่เก็บมาซื้อเท่านั้น
+6) สำหรับห้องที่มีกรงเหล็กกั้นไว้ข้างหน้าให้ลงไปห้องใต้ดินเพื่อหาคันโยกและสับมันประตูเหล็กก็จะเปิด
+7) เมื่อใดมาถึงห้องพยาบาลคุณโชคดีมากเพราะที่นี่มีเหรียญให้เก็บเยอะแยะ
+8) หากคุณเจอห้องสีฟ้าฟ้าแสดงว่าเป็นห้องของ Halt ถ้ามีสัญลักษณ์ให้หันกลับหลังให้หันกลับหลังและทำแบบนี้ต่อไปเรื่อยๆจนกว่าจะเปิดประตูห้องถัดไปได้
+9) ถ้าเจอห้องโถงขนาดใหญ่อีกครั้งแสดงว่า Seek จะไล่ล่าคนอีกครั้งและตาม guiding Light ไป
+10) ถ้ารู้สึกพื้นสั่นแสดงว่า Ambush มา ให้เข้าตู้แอบใต้เตียงหรือห้องใต้ดินเหมือนเดิม แต่ว่ามันจะกลับมาหลายๆรอบ ต้องเข้าตู้แล้วออกจากเตียงหลายๆรอบจนกว่ามันจะไป
+11) ในช่วงห้องที่ 89 คุณจะจอกับสวน
+12) และในห้องที่ 90 เป็นต้นไปจะเป็นโซนเรือนกระจก ตลอดทุกห้องมันจะมืดมาก ต้องระวังให้ดี เพราะ Rush มาได้
+13) ห้องที่ 100 เป็นห้องไฟฟ้าคุณต้องหาเบรกเกอร์มาเพื่อทำให้ไฟฟ้ากลับมาเป็นเหมือนเดิม ซึ่งก็จะมีบอสอยู่คุณต้องย่อเหมือนเดิมนะห้ามทำเสียงดัง มาซ่อมเบรกเกอร์เสร็จคุณก็จาวิ่งไปที่ลิฟท์แล้วก็ผ่านโรงแรมเป็นที่เรียบร้อย`,
+  "The Rooms": "",
+  "The Outdoors": "",
+  "The Mines": ""
+};
 
-// Zones
-const zones = ["Backdoors","Hotel","The Rooms","The Outdoors","The Mines"];
+// --------- สร้างตัวเลือก select ---------
 const zoneSelect = document.getElementById("zoneSelect");
-zones.forEach(z=>{ let op=document.createElement("option"); op.value=z; op.innerText=z; zoneSelect.appendChild(op); });
+for(let key in zones){
+  let opt = document.createElement("option");
+  opt.value = key;
+  opt.innerText = key;
+  zoneSelect.appendChild(opt);
+}
 
-const loginSection = document.getElementById("login-section");
-const userSection = document.getElementById("user-section");
-const editorSection = document.getElementById("editor-section");
-const loginBtn = document.getElementById("loginBtn");
-const logoutBtn = document.getElementById("logoutBtn");
-const usernameSpan = document.getElementById("username");
+// --------- แสดงเนื้อหา ---------
 const zoneContent = document.getElementById("zoneContent");
-const saveBtn = document.getElementById("saveBtn");
 
-let accessToken = null;
-let currentUser = null;
-let fileCache = {}; // เก็บ JSON แต่ละ zone
-
-// --------- GitHub Login (OAuth) ---------
-loginBtn.onclick = ()=>{
-  const state = Math.random().toString(36).substring(2);
-  const scope = "repo"; // ใช้เพื่อแก้ไฟล์ใน repo
-  const url = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&state=${state}`;
-  window.location.href = url;
-};
-
-// Logout
-logoutBtn.onclick = ()=>{
-  accessToken = null;
-  currentUser = null;
-  loginSection.style.display="block";
-  userSection.style.display="none";
-  editorSection.style.display="none";
-};
-
-// --------- โหลดข้อมูล JSON ของ Floors ---------
-async function loadZone(zone){
-  try {
-    const url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/floors/${zone}.json?ref=${branch}`;
-    const res = await fetch(url, {
-      headers: { Authorization: `token ${accessToken}` }
-    });
-    const data = await res.json();
-    if(data.content){
-      const decoded = atob(data.content);
-      zoneContent.value = decoded;
-      fileCache[zone] = { sha:data.sha, content:decoded };
-    } else {
-      zoneContent.value = "";
-      fileCache[zone] = { sha:null, content:"" };
-    }
-  } catch(err){
-    console.error(err);
-    zoneContent.value = "";
-    fileCache[zone] = { sha:null, content:"" };
-  }
+function loadZone(zone){
+  zoneContent.value = zones[zone] || "";
 }
 
-// --------- Save JSON ---------
-saveBtn.onclick = async ()=>{
-  const zone = zoneSelect.value;
-  const content = zoneContent.value;
-  const payload = {
-    message: `Update ${zone}`,
-    content: btoa(content),
-    branch: branch
-  };
-  if(fileCache[zone].sha) payload.sha = fileCache[zone].sha;
-
-  const url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/floors/${zone}.json`;
-  try {
-    const res = await fetch(url, {
-      method: "PUT",
-      headers: {
-        Authorization: `token ${accessToken}`,
-        "Content-Type":"application/json"
-      },
-      body: JSON.stringify(payload)
-    });
-    const data = await res.json();
-    alert("บันทึกเรียบร้อย!");
-    fileCache[zone].sha = data.content.sha;
-  } catch(err){
-    console.error(err);
-    alert("บันทึกไม่สำเร็จ");
-  }
-};
-
-// --------- เปลี่ยน Zone ---------
+// เมื่อเลือก zone
 zoneSelect.onchange = ()=>{
-  const zone = zoneSelect.value;
-  loadZone(zone);
+  loadZone(zoneSelect.value);
 };
 
-// --------- ตรวจสอบ OAuth Callback ---------
-const hash = window.location.hash;
-if(window.location.pathname.endsWith("callback.html")){
-  // callback.html จะดึง accessToken จาก URL
-  // ทำต่อใน callback.html
-}
+// โหลดเริ่มต้น
+zoneSelect.value = "Hotel";
+loadZone("Hotel");
+
 </script>
 
 </body>
