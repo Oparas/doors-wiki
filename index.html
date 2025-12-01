@@ -9,56 +9,60 @@
 <link href="https://fonts.googleapis.com/css2?family=Itim&display=swap" rel="stylesheet">
 
 <style>
-/* โหลดฟอนต์ Doors Roblox (สมมติไฟล์อยู่ในโฟลเดอร์ fonts/) */
+/* ฟอนต์ Doors Roblox สมมติไฟล์อยู่เดียวกับ index.html */
 @font-face {
     font-family: 'DoorsRoblox';
-    src: url('DoorsDefinitiveRegularr.ttf') format('truetype');
+    src: url('DoorsRoblox.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
 }
 
-/* Body และพื้นฐาน */
+/* พื้นฐานธีมสีดำ */
 body {
+    background-color: #000;
+    color: #fff;
+    font-family: 'Itim', sans-serif;
     padding: 20px;
-    background: linear-gradient(to bottom, #f0f4f7, #d9e2ec);
     margin: 0;
 }
 
-/* หัวข้อ */
 h1 {
     text-align: center;
-    color: #1f3c88;
+    color: #ffd700; /* สีทองเหมือนชื่อเกม */
     margin-bottom: 20px;
 }
 
-/* Select */
 select {
     width: 100%;
     padding: 12px;
     font-size: 16px;
     border-radius: 8px;
-    border: 1px solid #ccc;
+    border: 1px solid #444;
+    background-color: #111;
+    color: #fff;
     margin-bottom: 20px;
 }
 
-/* Content Box */
 #content {
-    background: #fff;
+    background-color: #111; /* กล่องเข้ม */
     padding: 20px;
     border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 10px rgba(255,255,255,0.1);
     min-height: 400px;
     white-space: pre-wrap;
     font-size: 16px;
     line-height: 1.6;
-    color: #333;
-    /* Default Font */
-    font-family: 'Itim', sans-serif;
 }
 
 /* ใช้ DoorsRoblox สำหรับตัวอักษรอังกฤษ */
 #content span.en {
     font-family: 'DoorsRoblox', sans-serif;
+    color: #fff;
+}
+
+/* ทำตัวเลขหัวข้อเด่น */
+#content p, #content li {
+    margin-bottom: 10px;
 }
 
 /* มือถือ */
@@ -89,13 +93,13 @@ select {
 <div id="content"></div>
 
 <script>
-// เนื้อหาแต่ละ zone
+// เนื้อหาของแต่ละ zone
 const zones = {
   "Backdoors": "ยังไม่มีเนื้อหา",
   "Hotel": `วิธีเล่น Doors Roblox The Hotel
-1)ประตูห้องที่ 1 จะล็อคเสมอ กุญแจจะอยู่หลังแผนกต้อนรับ ให้ย่อเข้าไป คอมกด C
+1) ประตูห้องที่ 1 จะล็อคเสมอ กุญแจจะอยู่หลังแผนกต้อนรับ ให้ย่อเข้าไป คอมกด C
 2) เล่นไปเรื่อยๆ ถ้าหาเจอไฟกะพริบก็ให้หาตู้หรือเตียง หรือห้องใต้ดินเพื่อแอบจาก Rush
-3) ถ้าเจอห้องโถงขนาดใหญ่นั่นแสดงว่ามี Seek แล้วคุณต้องวิ่งหนี โรคจิตกีดขวางตามแสงสีฟ้าไป หรือ Guiding light 
+3) ถ้าเจอห้องโถงขนาดใหญ่นั่นแสดงว่ามี Seek แล้วคุณต้องวิ่งหนี โรคจิตกีดขวางตามแสงสีฟ้าไป หรือ Guiding light
 4) เมื่อถึงห้องที่ 50 ก็ให้ย่อและห้ามส่งเสียงดัง อ่านหนังสือให้ครบ 8 เล่มแล้วไขรหัสให้ออกไปจากห้องสมุด
 5) เดินผ่านห้องสมุดออกมาแล้วไม่กี่ห้องก็จะมีร้านค้า คุณสามารถซื้อไอเทมกับร้านค้าได้ ไอเทมที่ขายก็จะมีประโยชน์แต่ต้องใช้ตังค์ที่เก็บมาซื้อเท่านั้น
 6) สำหรับห้องที่มีกรงเหล็กกั้นไว้ข้างหน้าให้ลงไปห้องใต้ดินเพื่อหาคันโยกและสับมันประตูเหล็กก็จะเปิด
@@ -106,7 +110,6 @@ const zones = {
 11) ในช่วงห้องที่ 89 คุณจะจอกับสวน
 12) และในห้องที่ 90 เป็นต้นไปจะเป็นโซนเรือนกระจก ตลอดทุกห้องมันจะมืดมาก ต้องระวังให้ดี เพราะ Rush มาได้
 13) ห้องที่ 100 เป็นห้องไฟฟ้าคุณต้องหาเบรกเกอร์มาเพื่อทำให้ไฟฟ้ากลับมาเป็นเหมือนเดิม ซึ่งก็จะมีบอสอยู่คุณต้องย่อเหมือนเดิมนะห้ามทำเสียงดัง มาซ่อมเบรกเกอร์เสร็จคุณก็จาวิ่งไปที่ลิฟท์แล้วก็ผ่านโรงแรมเป็นที่เรียบร้อย`,
-
   "The Rooms": "ยังไม่มีเนื้อหา",
   "The Outdoors": "ยังไม่มีเนื้อหา",
   "The Mines": "ยังไม่มีเนื้อหา"
