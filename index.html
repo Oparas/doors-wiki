@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Doors Wiki Fetch Example</title>
+</head>
+<body>
+
+<h2>ข้อมูลจาก Doors Wiki</h2>
+<div id="content">กำลังโหลดข้อมูล...</div>
+
+<script>
+// ชื่อบทความที่ต้องการดึงจาก Doors Wiki
+const pageTitle = "Figure";
+
+fetch(`https://doors.fandom.com/api.php?action=query&prop=extracts&format=json&origin=*&titles=${pageTitle}`)
+    .then(response => response.json())
+    .then(data => {
+        const pages = data.query.pages;
+        const page = pages[Object.keys(pages)[0]];  
+        const html = page.extract;
+
+        document.getElementById("content").innerHTML = html;
+    })
+    .catch(err => {
+        document.getElementById("content").innerText = "โหลดข้อมูลไม่สำเร็จ";
+        console.error(err);
+    });
+</script>
+
+</body>
+</html>
