@@ -2,87 +2,55 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>วิธีเล่น Doors (Zones Guide)</title>
+<title>Doors Guide</title>
 <style>
   body { font-family: Arial, sans-serif; background: #f2f2f2; padding: 20px; }
-  h1 { text-align: center; }
-  .container { max-width: 900px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+  .container { max-width: 900px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; }
   select { font-size: 16px; padding: 5px; margin-bottom: 20px; }
-  #content img { max-width: 100%; height: auto; display: block; margin: 10px 0; }
+  #content img { max-width: 100%; display: block; margin: 10px 0; }
   #content audio { display: block; margin: 10px 0; }
-  .credit { font-size: 0.9em; color: #555; margin-top: 20px; }
 </style>
 </head>
 <body>
 
-<h1>วิธีเล่น Doors (Zones Guide)</h1>
-
+<h1>Doors Guide</h1>
 <div class="container">
-  <label for="zoneSelect">เลือกโซน:</label>
-  <select id="zoneSelect">
-    <option value="Backrooms">Backdoors</option>
-    <option value="Hotel">Hotel</option>
-    <option value="The Rooms">The Rooms</option>
-    <option value="The Outdoors">The Outdoors</option>
-    <option value="The Mines">The Mines</option>
-  </select>
+  <label for="floorSelect">เลือก Floor/Zone:</label>
+  <select id="floorSelect"></select>
 
-  <div id="content">กรุณาเลือกโซนเพื่อดูวิธีเล่น...</div>
-
-  <div class="credit">
-    แหล่งข้อมูล: <a href="https://doors.fandom.com" target="_blank">Doors Wiki</a> (Fandom)
-  </div>
+  <div id="content">กรุณาเลือก Floor/Zone...</div>
 </div>
 
 <script>
-function loadZone(zone) {
-    const pageTitle = zone; // ชื่อบทความ Doors Wiki
-    const contentDiv = document.getElementById("content");
-    contentDiv.innerHTML = "กำลังโหลดข้อมูล...";
+// ดึงข้อมูลจาก localStorage หรือ JSON
+let data = JSON.parse(localStorage.getItem("doorsData")) || {};
 
-    fetch(`https://doors.fandom.com/api.php?action=parse&page=${encodeURIComponent(pageTitle)}&format=json&origin=*`)
-    .then(r => r.json())
-    .then(data => {
-        if (!data.parse || !data.parse.text) {
-            contentDiv.innerText = "ไม่พบข้อมูลสำหรับโซนนี้";
-            return;
-        }
-
-        contentDiv.innerHTML = data.parse.text["*"];
-
-        // แก้ <img> ให้โหลดภาพจริง
-        const imgs = contentDiv.querySelectorAll("img");
-        imgs.forEach(img => {
-            if (img.dataset.src) img.src = img.dataset.src;
-        });
-
-        // ถ้ามีไฟล์เสียงสำหรับโซนนี้ สามารถเพิ่ม <audio> ได้
-        // ตัวอย่าง:
-        // const audioUrl = "https://static.wikia.nocookie.net/doors/images/example.mp3";
-        // if(audioUrl){
-        //   const audio = document.createElement("audio");
-        //   audio.controls = true;
-        //   const source = document.createElement("source");
-        //   source.src = audioUrl;
-        //   source.type = "audio/mpeg";
-        //   audio.appendChild(source);
-        //   contentDiv.appendChild(audio);
-        // }
-
-    })
-    .catch(err => {
-        contentDiv.innerText = "เกิดข้อผิดพลาด: " + err;
-        console.error(err);
-    });
-}
-
-// Event listener เมื่อเปลี่ยนโซน
-document.getElementById("zoneSelect").addEventListener("change", e => {
-    loadZone(e.target.value);
+// สร้าง select
+const select = document.getElementById("floorSelect");
+Object.keys(data).forEach(key => {
+    const option = document.createElement("option");
+    option.value = key;
+    option.text = key;
+    select.appendChild(option);
 });
 
-// โหลดโซนแรกอัตโนมัติ
-loadZone(document.getElementById("zoneSelect").value);
+// แสดงเนื้อหา
+function showContent(key){
+    const contentDiv = document.getElementById("content");
+    if(data[key]){
+        contentDiv.innerHTML = data[key];
+    } else {
+        contentDiv.innerHTML = "ยังไม่มีข้อมูลสำหรับ " + key;
+    }
+}
+
+// event listener
+select.addEventListener("change", e => showContent(e.target.value));
+
+// โหลดแรก
+if(select.options.length > 0){
+    showContent(select.options[0].value);
+}
 </script>
 
 </body>
