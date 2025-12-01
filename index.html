@@ -1,35 +1,24 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Doors Wiki Fetch</title>
-</head>
+<html><head><meta charset="utf-8"><title>Fetch Doors Wiki</title></head>
 <body>
+  <h2>ข้อมูลจาก Doors Wiki (parse)</h2>
+  <div id="content">Loading...</div>
+  <script>
+    const pageTitle = "Figure";  // เปลี่ยนชื่อบทความได้
 
-<h2>ข้อมูลจาก Doors Wiki</h2>
-<div id="content">กำลังโหลดข้อมูล...</div>
-
-<script>
-const pageTitle = "Figure"; // เปลี่ยนชื่อหน้าได้
-
-fetch(`https://doors.fandom.com/api.php?action=query&prop=extracts&format=json&origin=*&titles=${pageTitle}`)
-    .then(response => response.json())
-    .then(data => {
-        const pages = data.query.pages;
-        const pageId = Object.keys(pages)[0];
-        const page = pages[pageId];
-
-        if (!page.extract) {
-            document.getElementById("content").innerHTML = "ไม่พบเนื้อหาหรือ API ไม่ส่งข้อมูลกลับ";
-            return;
+    fetch(`https://doors.fandom.com/api.php?action=parse&page=${encodeURIComponent(pageTitle)}&format=json&origin=*`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.parse && data.parse.text) {
+          document.getElementById("content").innerHTML = data.parse.text["*"];
+        } else {
+          document.getElementById("content").innerText = "ไม่พบเนื้อหาหรือ parse failed";
         }
-
-        document.getElementById("content").innerHTML = page.extract;
-    })
-    .catch(err => {
-        document.getElementById("content").innerText = "เกิดข้อผิดพลาด: " + err;
-    });
-</script>
-
+      })
+      .catch(err => {
+        document.getElementById("content").innerText = "Error: " + err;
+        console.error(err);
+      });
+  </script>
 </body>
 </html>
