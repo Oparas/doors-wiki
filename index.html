@@ -2,29 +2,34 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<title>Doors Wiki Editor</title>
+<title>วิธีเล่น Doors Roblox</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-  body { font-family: sans-serif; padding: 20px; }
-  #editor-section { margin-top: 20px; }
-  textarea { width:100%; height:200px; }
-  select, button { padding:8px; margin:5px 0; }
+  body { font-family: sans-serif; padding: 20px; line-height: 1.6; background:#f0f0f0; }
+  h1 { text-align: center; }
+  select { padding: 8px; margin: 10px 0; }
+  #content { background: #fff; padding: 15px; border-radius: 5px; min-height: 300px; white-space: pre-wrap; }
 </style>
 </head>
 <body>
 
-<h1>Doors Wiki Editor (Mobile)</h1>
+<h1>วิธีเล่น Doors Roblox</h1>
 
-<div id="editor-section">
-  <label>เลือก Zone:</label>
-  <select id="zoneSelect"></select>
-  <textarea id="zoneContent"></textarea>
-</div>
+<label>เลือกโซน / Floor:</label>
+<select id="zoneSelect">
+  <option value="Backdoors">Backdoors</option>
+  <option value="Hotel">Hotel</option>
+  <option value="The Rooms">The Rooms</option>
+  <option value="The Outdoors">The Outdoors</option>
+  <option value="The Mines">The Mines</option>
+</select>
+
+<div id="content"></div>
 
 <script>
-// --------- Zones และเนื้อหาเริ่มต้น ---------
+// เนื้อหาของแต่ละ zone
 const zones = {
-  "Backdoors": "",
+  "Backdoors": "ยังไม่มีเนื้อหา",
   "Hotel": `วิธีเล่น Doors Roblox The Hotel
 1) ประตูห้องที่ 1 จะล็อคเสมอ กุญแจจะอยู่หลังแผนกต้อนรับ ให้ย่อเข้าไป คอมกด C
 2) เล่นไปเรื่อยๆ ถ้าหาเจอไฟกะพริบก็ให้หาตู้หรือเตียง หรือห้องใต้ดินเพื่อแอบจาก Rush
@@ -39,36 +44,21 @@ const zones = {
 11) ในช่วงห้องที่ 89 คุณจะจอกับสวน
 12) และในห้องที่ 90 เป็นต้นไปจะเป็นโซนเรือนกระจก ตลอดทุกห้องมันจะมืดมาก ต้องระวังให้ดี เพราะ Rush มาได้
 13) ห้องที่ 100 เป็นห้องไฟฟ้าคุณต้องหาเบรกเกอร์มาเพื่อทำให้ไฟฟ้ากลับมาเป็นเหมือนเดิม ซึ่งก็จะมีบอสอยู่คุณต้องย่อเหมือนเดิมนะห้ามทำเสียงดัง มาซ่อมเบรกเกอร์เสร็จคุณก็จาวิ่งไปที่ลิฟท์แล้วก็ผ่านโรงแรมเป็นที่เรียบร้อย`,
-  "The Rooms": "",
-  "The Outdoors": "",
-  "The Mines": ""
+  "The Rooms": "ยังไม่มีเนื้อหา",
+  "The Outdoors": "ยังไม่มีเนื้อหา",
+  "The Mines": "ยังไม่มีเนื้อหา"
 };
 
-// --------- สร้างตัวเลือก select ---------
 const zoneSelect = document.getElementById("zoneSelect");
-for(let key in zones){
-  let opt = document.createElement("option");
-  opt.value = key;
-  opt.innerText = key;
-  zoneSelect.appendChild(opt);
-}
+const contentDiv = document.getElementById("content");
 
-// --------- แสดงเนื้อหา ---------
-const zoneContent = document.getElementById("zoneContent");
+// แสดงเนื้อหาเริ่มต้น
+contentDiv.textContent = zones[zoneSelect.value];
 
-function loadZone(zone){
-  zoneContent.value = zones[zone] || "";
-}
-
-// เมื่อเลือก zone
-zoneSelect.onchange = ()=>{
-  loadZone(zoneSelect.value);
+// เมื่อเปลี่ยน zone
+zoneSelect.onchange = () => {
+  contentDiv.textContent = zones[zoneSelect.value];
 };
-
-// โหลดเริ่มต้น
-zoneSelect.value = "Hotel";
-loadZone("Hotel");
-
 </script>
 
 </body>
