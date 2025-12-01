@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Doors Guide</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; }
+  input, textarea, button { display: block; width: 100%; margin: 10px 0; padding: 5px; }
+</style>
+</head>
+<body>
+
+<h1>Admin - เพิ่ม/แก้ข้อความ Doors Guide</h1>
+
+<label>ชื่อ Floor/Zone:</label>
+<input type="text" id="floorName" placeholder="เช่น Floor 1, Backrooms">
+
+<label>ข้อความ HTML:</label>
+<textarea id="floorContent" rows="10" placeholder="ใส่ข้อความ รูปภาพ หรือ audio"></textarea>
+
+<button id="saveBtn">บันทึก</button>
+<button id="showDataBtn">ดูข้อมูลทั้งหมดใน console</button>
+
+<script>
+let data = JSON.parse(localStorage.getItem("doorsData")) || {};
+
+document.getElementById("saveBtn").addEventListener("click", () => {
+    const name = document.getElementById("floorName").value.trim();
+    const content = document.getElementById("floorContent").value.trim();
+
+    if(!name || !content) return alert("กรอกชื่อและข้อความก่อน");
+
+    data[name] = content;
+    localStorage.setItem("doorsData", JSON.stringify(data));
+    alert("บันทึกเรียบร้อย!");
+});
+
+document.getElementById("showDataBtn").addEventListener("click", () => {
+    console.log(data);
+    alert("ข้อมูลทั้งหมดถูก log ใน console");
+});
+</script>
+
+</body>
+</html>
