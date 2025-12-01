@@ -1,86 +1,144 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <title>Doors Wiki Admin</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- Firebase CDN (v9 Modular) -->
-  <script type="module">
-    // Firebase SDK
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.11/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.6.11/firebase-analytics.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } 
-      from "https://www.gstatic.com/firebasejs/9.6.11/firebase-auth.js";
-
-    // Firebase Config
-    const firebaseConfig = {
-      apiKey: "AIzaSyDiVVLyuswljX045vy3OlOzzelA2SIBDYA",
-      authDomain: "howtoplaydoors.firebaseapp.com",
-      projectId: "howtoplaydoors",
-      storageBucket: "howtoplaydoors.firebasestorage.app",
-      messagingSenderId: "909503530350",
-      appId: "1:909503530350:web:d04277854658b5bdda2d7f",
-      measurementId: "G-2TT2FFN2DD"
-    };
-
-    // Init
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-    const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
-
-    // Login function
-    window.login = function() {
-      signInWithPopup(auth, provider)
-        .then(result => {})
-        .catch(error => alert("Login error: " + error.message));
-    }
-
-    // Logout function
-    window.logout = function() {
-      signOut(auth);
-    }
-
-    // Check Login State
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        document.getElementById("login-section").style.display = "none";
-        document.getElementById("user-section").style.display = "block";
-
-        document.getElementById("user-name").textContent = user.displayName;
-        document.getElementById("user-pic").src = user.photoURL;
-      } else {
-        document.getElementById("login-section").style.display = "block";
-        document.getElementById("user-section").style.display = "none";
-      }
-    });
-  </script>
-
-  <style>
-    body { font-family: sans-serif; padding: 20px; }
-    #user-pic { width: 60px; border-radius: 50%; }
-  </style>
+<meta charset="UTF-8">
+<title>Doors Wiki Editor</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body { font-family: sans-serif; padding: 20px; }
+  #user-section, #editor-section { display: none; margin-top: 20px; }
+  textarea { width:100%; height:120px; }
+  button { padding:8px 15px; margin:5px; }
+</style>
 </head>
 <body>
+<h1>Doors Wiki Editor</h1>
 
-  <!-- Login Screen -->
-  <div id="login-section">
-    <h2>Login เพื่อแก้ไขข้อมูล</h2>
-    <button onclick="login()">Login with Google</button>
-  </div>
+<div id="login-section">
+  <button id="loginBtn">Login with GitHub</button>
+</div>
 
-  <!-- User Info -->
-  <div id="user-section" style="display:none;">
-    <img id="user-pic">
-    <p>สวัสดี, <span id="user-name"></span></p>
-    <button onclick="logout()">Logout</button>
+<div id="user-section">
+  <p>สวัสดี, <span id="username"></span></p>
+  <button id="logoutBtn">Logout</button>
+</div>
 
-    <hr>
+<div id="editor-section">
+  <h2>แก้ไข Floors</h2>
+  <label>เลือก Zone:</label>
+  <select id="zoneSelect"></select>
+  <textarea id="zoneContent" placeholder="ใส่ข้อความ/HTML"></textarea>
+  <button id="saveBtn">บันทึก</button>
+</div>
 
-    <h2>แผงหลังบ้าน</h2>
-    <p>คุณสามารถแก้ไขข้อมูลแต่ละ Floors ได้ที่นี่</p>
-  </div>
+<script type="module">
+const clientId = "Ov23linoWAX16GheN9Wc";
+const redirectUri = "https://oparas.github.io/doors-wiki/callback.html";
+const repoOwner = "oparas"; // ชื่อ GitHub ของคุณ
+const repoName = "doors-wiki"; // repo ที่เก็บไฟล์ JSON
+const branch = "main"; // ชื่อ branch
+
+// Zones
+const zones = ["Backdoors","Hotel","The Rooms","The Outdoors","The Mines"];
+const zoneSelect = document.getElementById("zoneSelect");
+zones.forEach(z=>{ let op=document.createElement("option"); op.value=z; op.innerText=z; zoneSelect.appendChild(op); });
+
+const loginSection = document.getElementById("login-section");
+const userSection = document.getElementById("user-section");
+const editorSection = document.getElementById("editor-section");
+const loginBtn = document.getElementById("loginBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+const usernameSpan = document.getElementById("username");
+const zoneContent = document.getElementById("zoneContent");
+const saveBtn = document.getElementById("saveBtn");
+
+let accessToken = null;
+let currentUser = null;
+let fileCache = {}; // เก็บ JSON แต่ละ zone
+
+// --------- GitHub Login (OAuth) ---------
+loginBtn.onclick = ()=>{
+  const state = Math.random().toString(36).substring(2);
+  const scope = "repo"; // ใช้เพื่อแก้ไฟล์ใน repo
+  const url = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&state=${state}`;
+  window.location.href = url;
+};
+
+// Logout
+logoutBtn.onclick = ()=>{
+  accessToken = null;
+  currentUser = null;
+  loginSection.style.display="block";
+  userSection.style.display="none";
+  editorSection.style.display="none";
+};
+
+// --------- โหลดข้อมูล JSON ของ Floors ---------
+async function loadZone(zone){
+  try {
+    const url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/floors/${zone}.json?ref=${branch}`;
+    const res = await fetch(url, {
+      headers: { Authorization: `token ${accessToken}` }
+    });
+    const data = await res.json();
+    if(data.content){
+      const decoded = atob(data.content);
+      zoneContent.value = decoded;
+      fileCache[zone] = { sha:data.sha, content:decoded };
+    } else {
+      zoneContent.value = "";
+      fileCache[zone] = { sha:null, content:"" };
+    }
+  } catch(err){
+    console.error(err);
+    zoneContent.value = "";
+    fileCache[zone] = { sha:null, content:"" };
+  }
+}
+
+// --------- Save JSON ---------
+saveBtn.onclick = async ()=>{
+  const zone = zoneSelect.value;
+  const content = zoneContent.value;
+  const payload = {
+    message: `Update ${zone}`,
+    content: btoa(content),
+    branch: branch
+  };
+  if(fileCache[zone].sha) payload.sha = fileCache[zone].sha;
+
+  const url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/floors/${zone}.json`;
+  try {
+    const res = await fetch(url, {
+      method: "PUT",
+      headers: {
+        Authorization: `token ${accessToken}`,
+        "Content-Type":"application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    alert("บันทึกเรียบร้อย!");
+    fileCache[zone].sha = data.content.sha;
+  } catch(err){
+    console.error(err);
+    alert("บันทึกไม่สำเร็จ");
+  }
+};
+
+// --------- เปลี่ยน Zone ---------
+zoneSelect.onchange = ()=>{
+  const zone = zoneSelect.value;
+  loadZone(zone);
+};
+
+// --------- ตรวจสอบ OAuth Callback ---------
+const hash = window.location.hash;
+if(window.location.pathname.endsWith("callback.html")){
+  // callback.html จะดึง accessToken จาก URL
+  // ทำต่อใน callback.html
+}
+</script>
 
 </body>
 </html>
