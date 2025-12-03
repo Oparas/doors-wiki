@@ -113,16 +113,6 @@ const zones = {
 6) ถ้าเวลาหมดจะมี Haste ไล่ล่า ต้องหาสวิตช์ทันไม่งั้นตาย
 7) ถึงห้อง -01 แสดงว่าผ่าน Backdoors แล้ว
 8) จะมีประตู 0000 กับ Curious Light กดเพื่อไป Hotel`,
-<!-- ฝังวิดีโอ YouTube -->
-<div style="max-width: 560px;">
-    <iframe width="100%" height="315"
-        src="https://www.youtube.com/embed/VGXYmbuMixw"
-        title="YouTube video player"
-        frameborder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowfullscreen>
-    </iframe>
-</div>
 
   "Hotel": `วิธีเล่น Doors Roblox The Hotel
 1) ประตูห้อง 1 จะล็อคเสมอ กุญแจกอยู่หลังเคาน์เตอร์
@@ -139,13 +129,52 @@ const zones = {
 12) ห้อง 90+ คือเรือนกระจก มืดมาก Rush มาได้
 13) ห้อง 100 ซ่อมเบรกเกอร์แล้ววิ่งไปลิฟต์`,
 
-  "The Rooms": "ยังไม่มีเนื้อหา",
+  "The Rooms": "วิธีเล่น The Rooms Doors roblox
+1) ด่านนี้มี 1,000 ห้อง ถ้าอัพเดทใหม่ไม่รู้จะมีกี่ห้อง
+2) ถ้าได้ยินเสียงลมให้เข้าตู้เพราะว่า A-60 จะมา
+3) ถ้ามีผีอยู่กลางจอแล้วทำสัญลักษณ์หยุดให้คุณหยุดทันที เพราะ A-90 มา ถ้าคุณไม่หยุดคุณก็จะได้รับความเสียหาย
+4) ถ้าได้ยินเสียงกลองให้เข้าตู้ทันทีเพราะว่า A-120 จะมา แต่ต้องรออยู่ในตู้จนกว่ามันจะกลับมา แต่บางครั้งมันก็ไม่กลับมาแล้วแต่รอบ
+5) เล่นแบบนี้ไปเรื่อยๆจนกว่าจะถึงห้อง 1,000 แต่อัพเดทใหม่ไม่รู้จะมีกี่ห้อง",
   "The Outdoors": "ยังไม่มีเนื้อหา",
   "The Mines": "ยังไม่มีเนื้อหา"
 };
 
 const zoneSelect = document.getElementById("zoneSelect");
 const contentDiv = document.getElementById("content");
+
+// ฟังก์ชัน wrap ภาษาอังกฤษด้วย span
+function wrapEnglish(text){
+    return text.replace(/[A-Za-z0-9.,()'"-]+/g, m => `<span class="en">${m}</span>`);
+}
+
+// โหลดข้อมูลโซน
+function loadZone(zone){
+    let raw = zones[zone] || "";
+    let html = wrapEnglish(raw);
+
+    // ถ้าเลือก Backdoors → เพิ่มวิดีโอ
+    if(zone === "Backdoors"){
+        html += `
+        <div style="max-width: 560px; margin-top:20px;">
+            <iframe width="100%" height="315"
+                src="https://www.youtube.com/embed/VGXYmbuMixw"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen>
+            </iframe>
+        </div>
+        `;
+    }
+
+    contentDiv.innerHTML = html;
+}
+
+// ค่าเริ่มต้น
+zoneSelect.onchange = ()=>loadZone(zoneSelect.value);
+zoneSelect.value = "Hotel";
+loadZone("Hotel");
+</script>
+
 
 // ฟังก์ชัน wrap ภาษาอังกฤษด้วย span
 function wrapEnglish(text){
