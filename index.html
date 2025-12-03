@@ -15,7 +15,7 @@
     src: url('DoorsDefinitiveRegularr.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
-}   /* ← ต้องมีปิดตรงนี้ */
+}
 
 /* พื้นหลังเว็บ */
 body {
@@ -25,15 +25,10 @@ body {
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
-}
-
-/* ธีมสีดำแบบ DOORS */
-body {
     background-color: #000;
     color: #fff;
     font-family: 'Itim', sans-serif;
     padding: 20px;
-    margin: 0;
 }
 
 h1 {
@@ -68,10 +63,6 @@ select {
 #content .en {
     font-family: 'DoorsRoblox', sans-serif;
     color: #fff;
-}
-
-#content p, #content li {
-    margin-bottom: 10px;
 }
 
 /* มือถือ */
@@ -129,12 +120,13 @@ const zones = {
 12) ห้อง 90+ คือเรือนกระจก มืดมาก Rush มาได้
 13) ห้อง 100 ซ่อมเบรกเกอร์แล้ววิ่งไปลิฟต์`,
 
-  "The Rooms": "วิธีเล่น The Rooms Doors roblox
-1) ด่านนี้มี 1,000 ห้อง ถ้าอัพเดทใหม่ไม่รู้จะมีกี่ห้อง
-2) ถ้าได้ยินเสียงลมให้เข้าตู้เพราะว่า A-60 จะมา
-3) ถ้ามีผีอยู่กลางจอแล้วทำสัญลักษณ์หยุดให้คุณหยุดทันที เพราะ A-90 มา ถ้าคุณไม่หยุดคุณก็จะได้รับความเสียหาย
-4) ถ้าได้ยินเสียงกลองให้เข้าตู้ทันทีเพราะว่า A-120 จะมา แต่ต้องรออยู่ในตู้จนกว่ามันจะกลับมา แต่บางครั้งมันก็ไม่กลับมาแล้วแต่รอบ
-5) เล่นแบบนี้ไปเรื่อยๆจนกว่าจะถึงห้อง 1,000 แต่อัพเดทใหม่ไม่รู้จะมีกี่ห้อง",
+  "The Rooms": `วิธีเล่น The Rooms Doors Roblox
+1) ด่านนี้มี 1,000 ห้อง ถ้าอัปเดตใหม่อาจมีมากกว่านี้
+2) ถ้าได้ยินเสียงลมให้เข้าตู้เพราะ A-60 จะมา
+3) ถ้ามีผีขึ้นกลางจอพร้อมสัญลักษณ์หยุด ให้หยุดทันที (A-90)
+4) ถ้าได้ยินเสียงกลองให้เข้าตู้ (A-120) ต้องรอจนมันกลับ
+5) เล่นไปเรื่อยๆจนถึงห้อง 1,000`,
+
   "The Outdoors": "ยังไม่มีเนื้อหา",
   "The Mines": "ยังไม่มีเนื้อหา"
 };
@@ -160,31 +152,11 @@ function loadZone(zone){
                 src="https://www.youtube.com/embed/VGXYmbuMixw"
                 frameborder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowfullscreen>
-            </iframe>
-        </div>
-        `;
+                allowfullscreen></iframe>
+        </div>`;
     }
 
     contentDiv.innerHTML = html;
-}
-
-// ค่าเริ่มต้น
-zoneSelect.onchange = ()=>loadZone(zoneSelect.value);
-zoneSelect.value = "Hotel";
-loadZone("Hotel");
-</script>
-
-
-// ฟังก์ชัน wrap ภาษาอังกฤษด้วย span
-function wrapEnglish(text){
-    return text.replace(/[A-Za-z0-9.,()'"-]+/g, m => `<span class="en">${m}</span>`);
-}
-
-// โหลดข้อมูลโซน
-function loadZone(zone){
-    let raw = zones[zone] || "";
-    contentDiv.innerHTML = wrapEnglish(raw);
 }
 
 // ค่าเริ่มต้น
